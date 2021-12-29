@@ -1,7 +1,7 @@
 # Data analysis Covid-19
 ## Organización de lenguajes y compiladores 2
 
-- [Enlace](https://covid19-data-analysis-etejaxun.herokuapp.com/)
+- [Enlace](https://covid19-analysis-etejaxun.herokuapp.com/)
 
 
 
