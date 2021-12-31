@@ -8,6 +8,25 @@ EntornoGlobal = None
 ArbolAnterior = None
 app = Flask(__name__)
 
+
+
+def obtenerParametros(option):
+    if option == '1': ## Tendencia de la infección por Covid-19 en un país
+        parametros = [
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "contry"},
+                {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "cases_per_day"}
+        ]    
+        return parametros
+    if option == '2': ## Predicción de Infertados en un País
+        parametros = [
+                {'nombre': 'Etiqueta País', 'valorActual': "contry"},
+                {'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'nombre': 'Etiqueta casos', 'valorActual': "cases"}
+        ]    
+        return parametros        
+
+
 @app.route("/")
 def home():
     return render_template('index.html')
@@ -23,6 +42,13 @@ def reports():
     else:
         return render_template('reports.html')
 
+@app.route("/getParametros", methods=["POST", "GET"])
+def getParametros():
+    option = '1'
+    if request.method == "POST":
+        option = request.form["option"]
+    return jsonify(obtenerParametros(option))     
+
 @app.route("/descargar" , methods=["POST"])
 def descargar():      
     return redirect("/static/ast.gv.pdf")
@@ -31,3 +57,6 @@ if __name__ == "__main__":
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
     app.run(debug=True)#para que se actualice al detectar cambios
+
+
+

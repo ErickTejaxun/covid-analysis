@@ -1,3 +1,8 @@
 Flask==1.1.2
 gunicorn
-graphviz==0.5.2
+numpy
+scipy
+joblib
+pandas
+matplotlib
+scikit-learn
