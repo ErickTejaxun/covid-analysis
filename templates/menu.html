@@ -23,19 +23,33 @@
           
           <div class="tab-content" id="myTabContent">
             <!--Carga de archivo-->
-            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">              
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">  
+              <form enctype="multipart/form-data">              
                 <div class="mb-3">
                   <br>
                   <label for="exampleInputPassword1" class="form-label">Archivo de datos</label>                  
-                  <input type="file" accept=".csv, .xls, .xlsx, .json" class="form-control" id="archivo_entrada" value="Cargar archivo">                   
+                  <input type="file" accept=".csv, .xls, .xlsx, .json" class="form-control" id="archivo_entrada" name="archivo_entrada" value="Cargar archivo">                   
                 </div>
-                <button class="btn btn-primary" onclick="cargarArchivo()" >Cargar Archivo</button>                                   
+                <!--<button class="btn btn-primary" onclick="cargarArchivo()" >Cargar Archivo</button>   -->
+                <input type="button" class="btn btn-primary" value="Subir Archivo" id="botonCargarArchivo">                                
+              </form>            
             </div>
 
             <!--Menu de parametrización-->
             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
               <form id="formularioAnalisis" name="formularioAnalisis">
                 <br>
+                <div class="mb-3">
+                  <label for="archivo" class="form-label">Archivo seleccionado</label>                                      
+                  <select id="comboArchivo" class="form-select">
+                    <option value="0">-------------</option>
+                    {% for archivo in listaArchivos %}                    
+                    <option value="{{archivo}}">{{archivo}}</option>
+                    {% endfor %}
+                  </select>                                   
+                </div> 
+                <div class="mb-3" id="tabla-campos-div">                  
+                </div>                               
                 <div class="mb-3">
                   <label for="prediccion" class="form-label">Predicción a realizar</label>                                      
                   <select id="comboOpciones" class="form-select">
@@ -67,22 +81,19 @@
                     <option value="25">Predicción de casos confirmados por día</option>
                   </select>                                   
                 </div>
+                <div class="mb-3">
+                  <label for="prediccion" class="form-label">Tipo de análisis</label>                                      
+                  <select id="comboOpciones" class="form-select">
+                    <option value="0">Predeterminado</option>
+                    <option value="1">Regresión lineal</option>
+                    <option value="2">Regresión polinomial</option>
+                  </select>                                   
+                </div>                
                 <div class="mb-3" id="parametros-div">                  
                 </div>
-                <!--
-                <div class="mb-3">
-                  <label for="exampleInputPassword1" class="form-label">Password</label>
-                  <input type="password" class="form-control" id="exampleInputPassword1">
-                </div>
-                <div class="mb-3 form-check">
-                  <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                  <label class="form-check-label" for="exampleCheck1">Check me out</label>
-                </div>
-                -->
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary">Comenzar análisis</button>
               </form>
             </div>
-
             <!-- Menú de gestión de reportes-->
             <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">              
               <div class="card" style="width: 18rem;">
@@ -90,7 +101,8 @@
                   <div class="form-group">
                     <label for="exampleInputEmail1">Descargar como pdf</label>                    
                   </div>
-                  <button type="submit" class="btn btn-primary">Descargar</button>
+                  <!--type="submit" -->
+                  <button class="btn btn-primary" onclick="lanzarAnalisis()">Descargar</button>
                 </form>
               </div>              
             </div>
@@ -120,12 +132,19 @@
                   var nuevoParametro = 
                   '<div class="mb-3">\n' 
                   +'<label for="label'+element.id+'" class="form-label">'+element.nombre+'</label>\n'
-                  +'<input type="text" class="form-control" id="'+element.id+'" value="'+element.valorActual+'">\n'
+                  +'<input type="text" class="form-control" id="'+element.id+'" value="'+element.valorActual+'">\n'                  
                   +'</div>\n';
                     console.log(nuevoParametro);
                   $('#parametros-div').prepend(nuevoParametro);
 
                 });
+                var nuevoParametro = 
+                  '<div class="mb-3">\n' 
+                  +'<label for="labelReporte'+opcion+'" class="form-label">Codigo Reporte</label>\n'
+                  +'<input type="number" class="form-control" id=Reporte"'+opcion+'" value="'+opcion+'" disabled>\n'                  
+                  +'</div>\n';
+                    console.log(nuevoParametro);
+                  $('#parametros-div').prepend(nuevoParametro);                
                 toastr.success('Se han cargado los parámetros.');    
               }              
               else
@@ -140,26 +159,127 @@
     });     
   };
 
+  // Funcion para ir a traer las columnas de la tabla.
+  document.getElementById("comboArchivo").onchange = function()
+    {
+      var opcion = document.getElementById("comboArchivo").value;
+      if(opcion==0) {return;}
+      $.ajax
+      ({
+              type: "POST",
+              url: '/getCampos',
+              dataType: "json",
+              data: {archivo:opcion},            
+              success: function(response)
+              {  
+                console.log(response);
+                // Quitamos la tabla.
+                $('#tabla-campos-div').empty();    
+                if(response != null && response != undefined)
+                {        
+                  var nuevaTabla = 
+                  '<label for="labelTabla" class="form-label">Nombre encabezados</label>\n'
+                  +'<table id="tablaCampos" class="table table-striped dt-responsive w-100 table-bordered display nowrap table-hover mb-0">\n'
+                    +'<thead>\n'
+                      +'<tr>\n'
 
-  function cargarArchivo()
-  {        
-    toastr.warning('Iniciando carga');    
-    $.ajax
-    ({
-            type: "POST",
-            url: '/cargarArchivo',
-            dataType: "json",
-            data: {inpt:code},            
-            success: function(response)
-            {                
-              toastr.success('Cargando archivo de datos');    
-            },
-            error: function(error)
-            {                            
-                toastr.error('Error al conectar con el servidor');
-            }
-    });    
+                  response.forEach(columna => {
+                      nuevaTabla = nuevaTabla 
+                      +'<th>'+columna+'</th>\n'                        
+                  });
+                  nuevaTabla = nuevaTabla  
+                    +'</tr>\n'
+                    +'</thead>\n'
+                    +'</table>\n';
+                    $('#tabla-campos-div').prepend(nuevaTabla);            
+
+
+                    $('#tablaCampos').DataTable({
+                    "language":
+                    {
+                      "infoEmpty" : "",
+                      "zeroRecords" : "Solo encabezados"
+                    },
+                    "paging":   false,            
+                    "scrollX": true,
+                    "select": false,  
+                    "searching": false,                  
+                    "dom":'<"toolbar">frtip',
+                  });
+                  toastr.success('Se han cargado los parámetros.');    
+                }              
+                else
+                {
+                  toastr.warning('Error al cargar los campos del archivo');    
+                }
+              },
+              error: function(error)
+              {                            
+                  toastr.error('Error al conectar con el servidor');
+              }
+      });     
+    };
+
+
+  function lanzarAnalisis()
+  {
+    var reporte = $('comboOpciones').value();
+
   }
+
+
+$(document).ready(function()
+{
+  $("#botonCargarArchivo").click(function(){
+
+      var fd = new FormData();
+      var files = $('#archivo_entrada')[0].files;
+      
+      // Check file selected or not
+      if(files.length > 0 )
+      {
+        fd.append('file',files[0]);
+
+        $.ajax({
+            url: '/cargarArchivo',
+            type: 'post',
+            data: fd,
+            contentType: false,
+            processData: false,
+            success: function(response)
+            {
+              if(response.codigo == 200)
+              {                
+                toastr.success(response.mensaje);
+                // revisamos si tenemos el listado de los archivos disponibles.
+                if(response.archivos!=null && response.archivos!= undefined)
+                {
+                  $('#comboArchivo').empty();
+                  response.archivos.forEach(archivo => 
+                  {
+                    var selected = "";
+                    if(archivo==response.archivo){selected = "selected";}
+
+                    nuevoArchivo = '<option value="'+archivo+'" '+selected+' >'+archivo+'</option>';
+                    $('#comboArchivo').prepend(nuevoArchivo);
+                  });                  
+                  var nuevoArchivo = '<option value="0">-------------</option>';
+                  $('#comboArchivo').prepend(nuevoArchivo);
+                }
+              }else
+              {
+                  toastr.warning(response.mensaje);
+              }
+            },
+        });
+      }else
+      {
+        toastr.warning("Debe seleccionar un archivo.");
+      }
+  });
+});
+
+
 </script>
 
 
