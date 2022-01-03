@@ -191,7 +191,13 @@
                 // Quitamos la tabla.
                 $('#tabla-campos-div').empty();                 
                 if(response != null && response != undefined)
-                {        
+                {  
+                  if(response.codigo == 666)
+                  {
+                    toastr.error('Error : ' + response.mensaje);
+                    return;
+                  }
+                  
                   var nuevaTabla = 
                   '<label for="labelTabla" class="form-label">Nombre encabezados</label>\n'
                   +'<table id="tablaCampos" class="table table-striped dt-responsive w-100 table-bordered display nowrap table-hover mb-0">\n'
@@ -230,7 +236,7 @@
               },
               error: function(error)
               {                            
-                  toastr.error('Error al conectar con el servidor');
+                  toastr.error('Error al conectar con el servidor. Error' + error);
               }
       });     
     };

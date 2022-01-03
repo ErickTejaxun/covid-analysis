@@ -40,23 +40,41 @@ def obtenerParametros(option):
 
 
 def obtenerEncabezados(file):    
-    if '.csv' in file: # El archivo es un csv
-        df = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'])+file)
-        encabezados = df.columns.values.tolist()        
-        #return encabezados.to_json(orient="records") 
-        return encabezados
+    try:
+        if '.csv' in file: # El archivo es un csv
+            df = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'])+file)
+            encabezados = df.columns.values.tolist()        
+            #return encabezados.to_json(orient="records") 
+            return {
+                "encabezados": encabezados,
+                "codigo": 100,
+                "mensaje": "OK"
+            }
 
-    if '.xlsx' in file: #El archivo es un excel
-        df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
-        encabezados = df.columns.values.tolist()
-        #return encabezados.to_json(orient="records") 
-        return encabezados
+        if '.xlsx' in file: #El archivo es un excel
+            df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
+            encabezados = df.columns.values.tolist()
+            #return encabezados.to_json(orient="records") 
+            return {
+                "encabezados": encabezados,
+                "codigo": 100,
+                "mensaje": "OK"
+            }
 
-    if '.xlsx' in file: #El archivo es un excel
-        df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
-        encabezados = df.columns.values.tolist()
-        #return encabezados.to_json(orient="records") 
-        return encabezados
+        if '.xlsx' in file: #El archivo es un excel
+            df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
+            encabezados = df.columns.values.tolist()
+            #return encabezados.to_json(orient="records") 
+            return {
+                "encabezados": encabezados,
+                "codigo": 100,
+                "mensaje": "OK"
+            }
+    except Exception as e: 
+        return {
+            "mensaje": str(e),
+            "codigo" : 666
+        }
 
 ## Endpoints 
 
