@@ -5,7 +5,8 @@ import json
 from json import JSONEncoder
 from werkzeug.utils import secure_filename
 import pandas as pd
-from analisis import TendenciaInfeccion
+from analisis import *
+#import analisis
 
 UPLOAD_FOLDER = './archivos/'
 ALLOWED_EXTENSIONS = {'csv', 'xls', 'xlsx', 'json'}
@@ -25,9 +26,10 @@ def obtenerListaArchivos():
 def obtenerParametros(option):
     if option == '1': ## Tendencia de la infección por Covid-19 en un país
         parametros = [
-                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "contry"},
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "Pais"},
                 {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
-                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "cases_per_day"}
+                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "Infectados"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "Dia"}
         ]    
         return parametros
     if option == '2': ## Predicción de Infertados en un País
@@ -127,12 +129,21 @@ def analisis():
     if request.method == "POST":
         codigoAnalisis = request.form["tipoAnalisis"]
         archivoAnalisis = request.form["archivoAnalisis"]
-        tipoAnalisis = request.form["tipoAnalisis"]        
+        tipoAnalisis = request.form["tipoAnalisis"]    
+        tipoRegresion = request.form["tipoRegresion"]    
         if(codigoAnalisis == '1'):
             pais = request.form["nombrePais"]
+            feature = request.form["feature"]
             infecciones = request.form["etiquetaInfecciones"]
-            predicciones = []
-            resultados = TendenciaInfeccion(archivoAnalisis, pais, infecciones, predicciones)
+            etiquetaPais = request.form["etiquetaPais"]
+            #predicciones = str(request.form.getlist("valoresPredecidos")).split(",")
+            predicciones = request.form.getlist("valoresPredecidos")
+            predicciones = predicciones[0]
+            #(archivo, pais, infecciones, etiquetaPais, predicciones)
+            if (tipoRegresion == '1'):
+                resultados = TendenciaInfeccionLineal(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones)
+            if (tipoRegresion == '2'):
+                resultados = TendenciaInfeccionPoli(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones)
             return jsonify(resultados)
             #archivo, pais, infecciones, etiquetaPais, predicciones =[]
     return jsonify({"codigo":400})

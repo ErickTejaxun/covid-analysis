@@ -93,8 +93,7 @@
                 </div>  
                 <div class="mb-3" id="tablaPredicciones" name="tablaPredicciones">                  
                 </div>
-              </form>
-              <button class="btn btn-primary" id="agregarPrediccion" name="agregarPrediccion">Agregar prediccion</button>
+              </form>              
               <button class="btn btn-primary"  id="botonLanzarAnalisis" onclick="lanzarAnalisis()">Comenzar análisis</button>
             </div>
             <!-- Menú de gestión de reportes-->
@@ -146,7 +145,7 @@
                 var predicciones = 
                 '<div class="mb-3" id="tablaPredicciones" name="tablaPredicciones">\n'
                 +'<label for="labelPredicciones" class="form-label">Valor a predecir</label>\n'                    
-                +'<select id="valoresPredecidos[]" name="valoresPredecidos[]" class="form-control-valores-predecidos form-select" multiple="multiple">\n'                  
+                +'<select id="valoresPredecidos" class="form-control-valores-predecidos form-select" multiple="multiple">\n'                  
                 +'</select>\n';
                 +'</div>\n';
                 $('#parametros-div').append(predicciones);      
@@ -300,6 +299,7 @@
   function lanzarAnalisis()
   {
     var frm = $("#formularioAnalisis");  
+    console.log(frm.serialize() + '&valoresPredecidos=' + $('#valoresPredecidos').val() );
     var archivo = document.getElementById("archivoAnalisis").value;
     if(archivo==="0")
     {
@@ -309,7 +309,7 @@
     $.ajax({
               url: '/analisis',
               type: 'post',
-              data: frm.serialize(),
+              data: frm.serialize() + '&valoresPredecidos=' + $('#valoresPredecidos').val(),
               success: function(response)
               {                   
                 $('#contenedorResultados').empty();
@@ -318,16 +318,15 @@
 
                   var campoFecha = 
                   '<div class="mb-3">\n' 
-                  +'<label for="labelReporteCoeficiente" class="form-label">Fecha</label>\n'
-                  +'<input type="text" class="form-control" id="idReporte" name="idReporte" value="'+response.timestamp+'" disabled>\n'                  
+                  +'<label for="labelReporteCoeficiente" class="form-label">Fecha análisis</label>\n'
+                  +'<input type="text" class="form-control" id="fecha" name="fecha" value="'+response.timestamp+'" disabled>\n'                  
                   +'</div>\n';  
                   $('#contenedorResultados').append(campoFecha);
 
                   var predicciones = 
-                  '<div class="mb-3" id="informacion" name="informacion">\n'
+                  '<div class="mb-3">\n'
                   +'<label for="labelPredicciones" class="form-label">Errores:</label>\n'
-                  +'<input type="text" class="form-control" id="idReporte" name="error" value="'+response.mensaje+'" disabled>\n'                   
-                  +'</select>\n';
+                  +'<input type="text" class="form-control" id="errorM" name="errorM" value="'+response.mensaje+'" disabled>\n'                                     
                   +'</div>\n';
                   $('#contenedorResultados').append(predicciones); 
                   toastr.error("Ha ocurrido un error. "+ response.mensaje);
@@ -346,30 +345,37 @@
                   var campoFecha = 
                     '<div class="mb-3">\n' 
                     +'<label for="labelReporteFecha" class="form-label">Fecha</label>\n'
-                    +'<input type="text" class="form-control" id="campoFecha" name="idReporte" value="'+response.timestamp+'" disabled>\n'                  
+                    +'<input type="text" class="form-control" id="campoFecha" name="campoFecha" value="'+response.timestamp+'" disabled>\n'                  
                     +'</div>\n';  
                     $('#contenedorResultados').append(campoFecha);  
 
                   var campoCoeficiente = 
                     '<div class="mb-3">\n' 
                     +'<label for="labelReporteCoeficiente" class="form-label">Coeficiente de determinacion R2</label>\n'
-                    +'<input type="text" class="form-control" id="campoCoeficiente" name="idReporte" value="'+response.coeficiente+'" disabled>\n'                  
+                    +'<input type="text" class="form-control" id="campoCoeficiente" name="campoCoeficiente" value="'+response.coeficiente+'" disabled>\n'                  
                     +'</div>\n';                    
-                    $('#contenedorResultados').prepend(campoCoeficiente);  
+                    $('#contenedorResultados').append(campoCoeficiente);  
 
                     var campoMSE = 
                     '<div class="mb-3">\n' 
                     +'<label for="labelReporteCoeficiente" class="form-label">Error Cuadrático medico MSE</label>\n'
-                    +'<input type="text" class="form-control" id="campoCoeficiente" name="idReporte" value="'+response.mse+'" disabled>\n'                  
+                    +'<input type="text" class="form-control" id="campoCoeficienteMSE" name="campoCoeficienteMSE" value="'+response.mse+'" disabled>\n'                  
                     +'</div>\n';                    
-                    $('#contenedorResultados').prepend(campoMSE);                      
+                    $('#contenedorResultados').append(campoMSE);                      
                                   
                     var campoRMSE = 
                     '<div class="mb-3">\n' 
                     +'<label for="labelReporteCoeficiente" class="form-label">Raiz Error Cuadrático medico MSE</label>\n'
-                    +'<input type="text" class="form-control" id="campoCoeficiente" name="idReporte" value="'+response.rmse+'" disabled>\n'                  
+                    +'<input type="text" class="form-control" id="campoCoeficienteRMSE" name="campoCoeficienteRMSE" value="'+response.rmse+'" disabled>\n'                  
                     +'</div>\n';                    
-                    $('#contenedorResultados').prepend(campoRMSE);                      
+                    $('#contenedorResultados').append(campoRMSE);      
+                    
+                    var campoImagen = 
+                    '<div class="mb-3">\n' 
+                    +'<label for="labelReporteCoeficiente" class="form-label">Gráfico de evolución</label>\n'
+                    +'<img width="400" height="400" class="form-control" id="campoImagen" name="campoImagen" src="data:image/png;base64,'+response.img+'" alt="Gráfica" >\n'                  
+                    +'</div>\n';                    
+                    $('#contenedorResultados').append(campoImagen);                          
 
                   console.log(response);
                   toastr.success('Análisis realizado con éxito. Veo resultados en área de reportes.');
