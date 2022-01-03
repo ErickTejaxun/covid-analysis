@@ -193,13 +193,13 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
 def generarGrafica(modelo, X,y, y_predict, titulo, etiqueta,  etiquetaX, etiquetaY, nombreImagen):
     X_grid=np.arange(min(X),max(X)+100,0.1)
     X_grid=X_grid.reshape((len(X_grid),1))
-    plt.scatter(X,y,color='red')
+    plt.scatter(X,y,label=etiqueta, color='red')
     #plt.plot(X,modelo.predict(poly_reg.fit_transform(X)),color='blue')
-    plt.plot(X,y_predict,color='blue',label=etiqueta)
+    plt.plot(X,y_predict,label=etiqueta,color='blue')
     plt.title(titulo)
     plt.xlabel(etiquetaX)
     plt.ylabel(etiquetaY)
-    plt.savefig('./imagenes/'+nombreImag|en) 
+    plt.savefig('./imagenes/'+nombreImagen) 
 
     import os
     import io
