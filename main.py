@@ -5,6 +5,7 @@ import json
 from json import JSONEncoder
 from werkzeug.utils import secure_filename
 import pandas as pd
+from analisis import TendenciaInfeccion
 
 UPLOAD_FOLDER = './archivos/'
 ALLOWED_EXTENSIONS = {'csv', 'xls', 'xlsx', 'json'}
@@ -37,6 +38,27 @@ def obtenerParametros(option):
         ]    
         return parametros        
 
+
+def obtenerEncabezados(file):    
+    if '.csv' in file: # El archivo es un csv
+        df = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'])+file)
+        encabezados = df.columns.values.tolist()        
+        #return encabezados.to_json(orient="records") 
+        return encabezados
+
+    if '.xlsx' in file: #El archivo es un excel
+        df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
+        encabezados = df.columns.values.tolist()
+        #return encabezados.to_json(orient="records") 
+        return encabezados
+
+    if '.xlsx' in file: #El archivo es un excel
+        df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
+        encabezados = df.columns.values.tolist()
+        #return encabezados.to_json(orient="records") 
+        return encabezados
+
+## Endpoints 
 
 @app.route("/")
 def home():
@@ -82,24 +104,20 @@ def cargarCampos():
         return jsonify(obtenerEncabezados(nombreArchivo))
 
 
-def obtenerEncabezados(file):    
-    if '.csv' in file: # El archivo es un csv
-        df = pd.read_csv(os.path.join(app.config['UPLOAD_FOLDER'])+file)
-        encabezados = df.columns.values.tolist()        
-        #return encabezados.to_json(orient="records") 
-        return encabezados
-
-    if '.xlsx' in file: #El archivo es un excel
-        df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
-        encabezados = df.columns.values.tolist()
-        #return encabezados.to_json(orient="records") 
-        return encabezados
-
-    if '.xlsx' in file: #El archivo es un excel
-        df = pd.read_excel(os.path.join(app.config['UPLOAD_FOLDER'])+file)
-        encabezados = df.columns.values.tolist()
-        #return encabezados.to_json(orient="records") 
-        return encabezados
+@app.route("/analisis", methods=["POST"])
+def analisis():
+    if request.method == "POST":
+        codigoAnalisis = request.form["tipoAnalisis"]
+        archivoAnalisis = request.form["archivoAnalisis"]
+        tipoAnalisis = request.form["tipoAnalisis"]        
+        if(codigoAnalisis == '1'):
+            pais = request.form["nombrePais"]
+            infecciones = request.form["etiquetaInfecciones"]
+            predicciones = []
+            resultados = TendenciaInfeccion(archivoAnalisis, pais, infecciones, predicciones)
+            return jsonify(resultados)
+            #archivo, pais, infecciones, etiquetaPais, predicciones =[]
+    return jsonify({"codigo":400})
 
 @app.route("/descargar" , methods=["POST"])
 def descargar():      
