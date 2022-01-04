@@ -23,15 +23,7 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
     now = datetime.now()
     try :            
 
-        if '.csv' in archivo: # El archivo es un csv
-            dataframe = pd.read_csv('./archivos/'+archivo)
-
-        if '.xls' in archivo: #El archivo es un excel
-            dataframe = pd.read_excel('./archivos/'+archivo)
-
-        if '.xlsx' in archivo: #El archivo es un excel
-            dataframe = pd.read_excel('./archivos/'+archivo)
-
+        dataframe = getDataFrame(archivo)           
 
         #dataframe = dataframe.fillna(lambda x: x.median())
         ## Filtramos el dataframe para solo tener el pais que se ha indicado    
@@ -123,16 +115,7 @@ def TendenciaInfeccionRegresionPolinomial(archivo, pais, infecciones, etiquetaPa
     now = datetime.now()
     try :            
 
-        if '.csv' in archivo: # El archivo es un csv
-            dataframe = pd.read_csv('./archivos/'+archivo)
-
-        if '.xls' in archivo: #El archivo es un excel
-            dataframe = pd.read_excel('./archivos/'+archivo)
-
-        if '.xlsx' in archivo: #El archivo es un excel
-            dataframe = pd.read_excel('./archivos/'+archivo)
-   
-
+        dataframe = getDataFrame(archivo)   
         dataframe = dataframe[dataframe[etiquetaPais] == pais]
         dataframe.fillna(-99999, inplace=True)
         listaObjetos = dataframe.select_dtypes(include = ["object", 'datetime'], exclude=['number']).columns        
@@ -160,7 +143,7 @@ def TendenciaInfeccionRegresionPolinomial(archivo, pais, infecciones, etiquetaPa
                 
         nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
         nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
-        generarPDF(nombrePDF,titulo + pais, 'Regresión Polinomial')
+        generarPDF(nombrePDF,titulo + pais, 'Regresión Polinomial', '')
         prediccion_entrenamiento = lin_reg2.predict(X_poly)
         mse = mean_squared_error(dataframe_objetivo,prediccion_entrenamiento)
         rmse = np.sqrt(mse)
@@ -212,15 +195,7 @@ def TendenciaInfeccionRegresionPolinomial(archivo, pais, infecciones, etiquetaPa
 def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, predicciones):
     now = datetime.now()
     try :            
-
-        if '.csv' in archivo: # El archivo es un csv
-            dataframe = pd.read_csv('./archivos/'+archivo)
-
-        if '.xls' in archivo: #El archivo es un excel
-            dataframe = pd.read_excel('./archivos/'+archivo)
-
-        if '.xlsx' in archivo: #El archivo es un excel
-            dataframe = pd.read_excel('./archivos/'+archivo)
+        dataframe = getDataFrame(archivo)
 
         #dataframe = dataframe.fillna(lambda x: x.median())
         ## Filtramos el dataframe para solo tener el pais que se ha indicado    
@@ -279,7 +254,7 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
         #    valorpredicciones[str(prediccion)] = modelo.predict([[200]])
         nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
         nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'        
-        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal', img)
+        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal')
         return { "coeficiente": r2,"r2" : r2,"rmse" : rmse,"mse" : mse,"predicciones" : valorpredicciones,"timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),"code" : 200,            
             "img" : generarGrafica(modelo, dataframe_caracteristicas[feature], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], "", 'Fechas' , 'Infectados',nombrePNG),
             "nombrePdf" : nombrePDF
@@ -326,39 +301,19 @@ def generarGrafica(modelo, X, y, y_predict, titulo, etiqueta,  etiquetaX, etique
 
 
 
+def getDataFrame(archivo):
+    if '.csv' in archivo: # El archivo es un csv
+        dataframe = pd.read_csv('./archivos/'+archivo)
+        return dataframe
 
+    if '.xls' in archivo: #El archivo es un excel
+        dataframe = pd.read_excel('./archivos/'+archivo)
+        return dataframe
 
+    if '.xlsx' in archivo: #El archivo es un excel
+        dataframe = pd.read_excel('./archivos/'+archivo)
+        return dataframe
 
-'''
-dataframe = pd.read_csv("./data/pred.csv")
-
-dt_features = np.array([1,2,3,4,5,6,7,8,9,10]).reshape((-1,1))
-dt_target = dataframe['A']
-
-
-
-modelo = LinearRegression().fit(dt_features,dt_target )
-
-prediccion_entrenamiento = modelo.predict(dt_features)
-mse = mean_squared_error(y_true = dt_target, y_pred = prediccion_entrenamiento)
-# La raíz cuadrada del MSE es el RMSE
-rmse = np.sqrt(mse)
-print('Error Cuadrático Medio (MSE) = ' + str(mse))
-print('Raíz del Error Cuadrático Medio (RMSE) = ' + str(rmse))
-
-valorPredecir = 30
-predicted = modelo.predict([[valorPredecir]])
-print('Prediccion ' ,valorPredecir, ': ',predicted)
-print('Coeficiente R² ', modelo.score(dt_features,dt_target))
-print('slope: (pendiente)', modelo.coef_)
-print('coef:', modelo.coef_)
-
-
-
-Y_NEW = modelo.predict(dt_features)
-rmse = mean_squared_error(dt_target, Y_NEW)
-r2 = r2_score(dt_target,Y_NEW)
-
-print('RMSE: ', rmse)
-print('R2: ', r2)
-'''
+    if '.json' in archivo:
+        dataframe = pd.read_json('./archivos/'+archivo)     
+        return dataframe
