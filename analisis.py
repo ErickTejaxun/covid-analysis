@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 import matplotlib.pyplot as plt
 from Generadorpdf import *
 from sklearn.metrics import mean_squared_error
@@ -16,9 +17,9 @@ from PIL import Image
 # funcion para el primer análisis
 ## Regresion lineal
 
-titulosReportes = ['Tendencia de la infección por Covid-19 en un país']
+titulosReportes = ['Tendencia de la infección por Covid-19 ']
 
-def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, predicciones):
+def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, predicciones, titulo):
     now = datetime.now()
     try :            
 
@@ -36,6 +37,7 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
         ## Filtramos el dataframe para solo tener el pais que se ha indicado    
         #dataframe = dataframe.loc[dataframe[etiquetaPais] == pais]    
         dataframe = dataframe[dataframe[etiquetaPais] == pais]
+        dataframe.fillna(-99999, inplace=True)
         #dataframe = dataframe[(dataframe.Pais == pais )]
 
         #dataframe['tmp'] = dataframe[infecciones].cumsum()        
@@ -79,11 +81,13 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
         r2 = r2_score(dataframe_objetivo, prediccion_entrenamiento)
         coeficiente_ = modelo.score(dataframe_caracteristicas, dataframe_objetivo)
         
-        valorpredicciones = {}
+        valorpredicciones = []
         if(isinstance(predicciones, str)):
             predicciones = predicciones.split(",")            
-        #for prediccion in predicciones:
-        #    valorpredicciones[str(prediccion)] = modelo.predict([[200]])
+        for prediccion in predicciones:
+            if prediccion != '':
+                #valorpredicciones[str(prediccion)] = str(modelo.predict([[int(prediccion)]]))
+                valorpredicciones.append(str(modelo.predict([[int(prediccion)]])))
         
                 
         model_intercept = modelo.intercept_ #b0
@@ -92,10 +96,18 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
         ecuacion = "Y(x) = "+str(model_pendiente) + "X + (" +str(model_intercept)+')'
         nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
         nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
-        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país', 'Regresión Lineal')
+
+        tabla= '<table> <tr>'
+        index = 0
+        for prediccion in predicciones:
+            tabla = tabla + '<th>'+str(prediccion)+'</th>' + '<th>'+str(valorpredicciones[index])+'</th>'
+            index = index + 1
+        tabla = tabla + '</tr></table>'
+
+        generarPDF(nombrePDF,titulo + pais, 'Regresión Lineal', tabla)
         return {"coeficiente": r2, "r2" : r2, "rmse" : rmse, "mse" : mse, "predicciones" : valorpredicciones, "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
             "code" : 200,
-            "img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0],  ecuacion, 'Fechas' , 'Infectados',nombrePNG),
+            "img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulo + pais,  ecuacion, 'Fechas' , 'Infectados',nombrePNG),
             #"img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0] , ecuacion, 'Fechas' , 'Infectados','reporte1.png'),
             "nombrePdf":nombrePDF
         }   
@@ -105,7 +117,96 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
             "mensaje" : str(e).replace("\"", "-"),
             "code" : 666,
             "timestamp": now.strftime("%d/%m/%Y %H:%M:%S")
-        }        
+        }
+
+def TendenciaInfeccionRegresionPolinomial(archivo, pais, infecciones, etiquetaPais, feature, predicciones, grados, titulo):
+    now = datetime.now()
+    try :            
+
+        if '.csv' in archivo: # El archivo es un csv
+            dataframe = pd.read_csv('./archivos/'+archivo)
+
+        if '.xls' in archivo: #El archivo es un excel
+            dataframe = pd.read_excel('./archivos/'+archivo)
+
+        if '.xlsx' in archivo: #El archivo es un excel
+            dataframe = pd.read_excel('./archivos/'+archivo)
+   
+
+        dataframe = dataframe[dataframe[etiquetaPais] == pais]
+        dataframe.fillna(-99999, inplace=True)
+        listaObjetos = dataframe.select_dtypes(include = ["object", 'datetime'], exclude=['number']).columns        
+        le =LabelEncoder()
+
+        
+        for feat in listaObjetos:
+            dataframe[feat] = le.fit_transform(dataframe[feat].astype(str))
+        
+        dataframe_caracteristicas = dataframe[feature].values.reshape(-1,1)
+        dataframe_objetivo = dataframe[infecciones]            
+        print('Informacion dataframe tratado')
+        print(dataframe.info())  
+        print(dataframe)
+        print('Shape caracteristicas: ',dataframe_caracteristicas.shape)
+        print(dataframe_caracteristicas)
+        print('Shape objetivo/target', dataframe_objetivo.shape)
+        print(dataframe_objetivo)
+        
+        modelo = PolynomialFeatures(degree=grados, include_bias=False)
+        X_poly = modelo.fit_transform(dataframe_caracteristicas)
+        modelo.fit(X_poly, dataframe_objetivo)
+        lin_reg2=LinearRegression()
+        lin_reg2.fit(X_poly,dataframe_objetivo)
+                
+        nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
+        nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
+        generarPDF(nombrePDF,titulo + pais, 'Regresión Polinomial')
+        prediccion_entrenamiento = lin_reg2.predict(X_poly)
+        mse = mean_squared_error(dataframe_objetivo,prediccion_entrenamiento)
+        rmse = np.sqrt(mse)
+        r2 = r2_score(dataframe_objetivo,prediccion_entrenamiento)
+        #coeficiente_ = lin_reg2.score(dataframe_caracteristicas, dataframe_objetivo)
+        #model_intercept = modelo.intercept_ #b0
+        #model_pendiente = modelo.coef_ #b1        
+        #ecuacion = "Y(x) = "+str(model_pendiente) + "X + (" +str(model_intercept)+')'
+        ecuacion ="Y(x) = "
+
+        '''
+        valorpredicciones = []
+        if(isinstance(predicciones, str)):
+            predicciones = predicciones.split(",")            
+        if len(predicciones) == dataframe_caracteristicas[0].shape:
+            if predicciones != '':
+                #valorpredicciones[str(prediccion)] = str(modelo.predict([[int(prediccion)]]))
+                valorpredicciones.append(str(modelo.predict([[int(predicciones[0])]])))
+        else: 
+            valorpredicciones.append('Se requieren '+ str(dataframe_caracteristicas[0].shape) +' argumentos para esta predicción.')     
+        '''
+        valorpredicciones = []
+        if(isinstance(predicciones, str)):
+            predicciones = predicciones.split(",")            
+        for prediccion in predicciones:
+            if prediccion != '':
+                #valorpredicciones[str(prediccion)] = str(modelo.predict([[int(prediccion)]]))
+                try:
+                    valorpredicciones.append(str(lin_reg2.predict([[predicciones]]))) 
+                except Exception as e: 
+                    valorpredicciones.append(str(e)) 
+                
+        return {"coeficiente": r2, "r2" : r2, "rmse" : rmse, "mse" : mse, "predicciones" : valorpredicciones, "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
+            "code" : 200,
+            "img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulo + pais,  ecuacion, feature , infecciones,nombrePNG),
+            #"img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0] , ecuacion, 'Fechas' , 'Infectados','reporte1.png'),
+            "nombrePdf":nombrePDF
+        }   
+    except Exception as e: 
+        print('ERROR!!!!!!!!!!',str(e))
+        return {
+            "mensaje" : str(e).replace("\"", "-"),
+            "code" : 666,
+            "timestamp": now.strftime("%d/%m/%Y %H:%M:%S")
+        }
+
 
 
 def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, predicciones):
@@ -177,17 +278,9 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
         #for prediccion in predicciones:
         #    valorpredicciones[str(prediccion)] = modelo.predict([[200]])
         nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
-        nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
-        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal')
-        return {
-            "coeficiente": r2,
-            "r2" : r2,
-            "rmse" : rmse,
-            "mse" : mse,
-            "predicciones" : valorpredicciones,
-            "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
-            "code" : 200,
-            #"img" : generarGrafica(modelo, dataframe_caracteristicas['Dia'], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], 'Fechas' , 'Infectados','reporte1.png')
+        nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'        
+        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal', img)
+        return { "coeficiente": r2,"r2" : r2,"rmse" : rmse,"mse" : mse,"predicciones" : valorpredicciones,"timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),"code" : 200,            
             "img" : generarGrafica(modelo, dataframe_caracteristicas[feature], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], "", 'Fechas' , 'Infectados',nombrePNG),
             "nombrePdf" : nombrePDF
         }
@@ -212,9 +305,9 @@ def generarGrafica(modelo, X, y, y_predict, titulo, etiqueta,  etiquetaX, etique
 
     X_grid=np.arange(min(X),max(X),0.1)
     X_grid=X_grid.reshape((len(X_grid),1))
-    plt.scatter(X,y,label=etiqueta, color='red')
+    plt.scatter(X,y,label='Datos reales', color='red')
     #plt.plot(X,modelo.predict(poly_reg.fit_transform(X)),color='blue')
-    plt.plot(X,y_predict,label=etiqueta,color='blue')
+    plt.plot(X,y_predict,label='Modelo',color='blue')
     plt.title(titulo)
     plt.xlabel(etiquetaX)
     plt.ylabel(etiquetaY)

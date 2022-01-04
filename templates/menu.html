@@ -368,12 +368,27 @@
                     +'<label for="labelReporteCoeficiente" class="form-label">Raiz Error Cuadrático medico MSE</label>\n'
                     +'<input type="text" class="form-control" id="campoCoeficienteRMSE" name="campoCoeficienteRMSE" value="'+response.rmse+'" disabled>\n'                  
                     +'</div>\n';                    
-                    $('#contenedorResultados').append(campoRMSE);      
+                    $('#contenedorResultados').append(campoRMSE); 
                     
+                    
+                      var predicciones ='';
+                    response.predicciones.forEach(elemento => 
+                    {                      
+                       predicciones = predicciones + ' '+String(elemento) ;
+                    });
+                    
+                    var campoPredicciones = 
+                      '<div class="mb-3">\n' 
+                      +'<label for="labelReporteCoeficiente" class="form-label">Predicciones</label>\n'
+                      +'<input type="text" class="form-control" id="campoPredicciones" name="campoPredicciones" value="'+predicciones+'" disabled>\n'                  
+                      +'</div>\n';                    
+                      $('#contenedorResultados').append(campoPredicciones);                       
+
+
                     var campoImagen = 
                     '<div class="mb-3">\n' 
                     +'<label for="labelReporteCoeficiente" class="form-label">Gráfico de evolución</label>\n'
-                    +'<img width="400" height="400" class="form-control" id="campoImagen" name="campoImagen" src="data:image/png;base64,'+response.img+'" alt="Gráfica" >\n'                  
+                    +'<img width="500" height="500" class="form-control" id="campoImagen" name="campoImagen" src="data:image/png;base64,'+response.img+'" alt="Gráfica" >\n'                  
                     +'</div>\n';                    
                     $('#contenedorResultados').append(campoImagen);   
                     
@@ -383,7 +398,9 @@
                     +'<br>'
                     +'<a class="btn btn-primary" target="_blank" href="/obtenerPDF/'+response.nombrePdf+'" role="button">Link</a>'                    
                     +'</div>\n';                    
-                    $('#contenedorResultados').append(campoPDF);                     
+                    $('#contenedorResultados').append(campoPDF);
+                    
+                    
 
                   console.log(response);
                   toastr.success('Análisis realizado con éxito. Veo resultados en área de reportes.');

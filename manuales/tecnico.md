@@ -57,6 +57,7 @@ La arquitectura de la aplicación es monólitica, por lo cual esta misma aplicac
 - templates: Templates para la vista del frontend. 
 - analisis.py : Script para análisis de datos. 
 - Generadorpdf.py : Script para la generación de archivos pdf. 
+- Procfile : Archivo de configuración para ejecución en Heroku. 
 
 ### Endpoints
 - /analisis  
