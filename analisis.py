@@ -4,13 +4,14 @@ import numpy as np
 from sklearn import preprocessing
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
+from Generadorpdf import *
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import LabelEncoder
 from datetime import datetime
 import matplotlib.pyplot as plt
-
 from PIL import Image
+
 
 # funcion para el primer análisis
 ## Regresion lineal
@@ -30,14 +31,19 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
         if '.xlsx' in archivo: #El archivo es un excel
             dataframe = pd.read_excel('./archivos/'+archivo)
 
+
+        #dataframe = dataframe.fillna(lambda x: x.median())
         ## Filtramos el dataframe para solo tener el pais que se ha indicado    
-        dataframe.loc[dataframe[etiquetaPais] == pais]    
+        #dataframe = dataframe.loc[dataframe[etiquetaPais] == pais]    
+        dataframe = dataframe[dataframe[etiquetaPais] == pais]
         #dataframe = dataframe[(dataframe.Pais == pais )]
 
-
-
+        #dataframe['tmp'] = dataframe[infecciones].cumsum()        
+        #dataframe = dataframe.fillna(lambda x: x.median())
         ## La lista de objetos, es decir las columnas que tienen valores no numericos
-        listaObjetos = dataframe.select_dtypes(include = ["object", 'datetime']).columns
+        
+        #listaObjetos = dataframe.select_dtypes(include = ["object", 'datetime']).columns
+        listaObjetos = dataframe.select_dtypes(include = ["object", 'datetime'], exclude=['number']).columns
         #print(listaObjetos)
 
         le =LabelEncoder()
@@ -45,18 +51,19 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
         # Feature = caracteristica feat
         for feat in listaObjetos:
             dataframe[feat] = le.fit_transform(dataframe[feat].astype(str))
-
+        
 
         #dataframe_caracteristicas = dataframe.drop([infecciones], axis=1)#.reshape((-1,1))
         dataframe_caracteristicas = dataframe[feature].values.reshape(-1,1)
         dataframe_objetivo = dataframe[infecciones]
 
 
-        #print('Informacion dataframe tratado')
-        #print(dataframe.info())  
-        #print(dataframe)      
-
         
+        #dataframe_objetivo = dataframe_objetivo['tmp']
+
+        print('Informacion dataframe tratado')
+        print(dataframe.info())  
+        print(dataframe)
         print('Shape caracteristicas: ',dataframe_caracteristicas.shape)
         print(dataframe_caracteristicas)
         print('Shape objetivo/target', dataframe_objetivo.shape)
@@ -83,19 +90,15 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
         model_pendiente = modelo.coef_ #b1
 
         ecuacion = "Y(x) = "+str(model_pendiente) + "X + (" +str(model_intercept)+')'
-
-        return {
-            "coeficiente": r2,
-            "r2" : r2,
-            "rmse" : rmse,
-            "mse" : mse,
-            "predicciones" : valorpredicciones,
-            "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
+        nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
+        nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
+        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país', 'Regresión Lineal')
+        return {"coeficiente": r2, "r2" : r2, "rmse" : rmse, "mse" : mse, "predicciones" : valorpredicciones, "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
             "code" : 200,
-            #"img" : generarGrafica(modelo, dataframe_caracteristicas['Dia'], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], 'Fechas' , 'Infectados','reporte1.png')
-            "img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0] , ecuacion, 'Fechas' , 'Infectados','reporte1.png')
-        }
-        
+            "img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0],  ecuacion, 'Fechas' , 'Infectados',nombrePNG),
+            #"img" : generarGrafica(modelo, dataframe_caracteristicas, dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0] , ecuacion, 'Fechas' , 'Infectados','reporte1.png'),
+            "nombrePdf":nombrePDF
+        }   
     except Exception as e: 
         print('ERROR!!!!!!!!!!',str(e))
         return {
@@ -118,26 +121,34 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
         if '.xlsx' in archivo: #El archivo es un excel
             dataframe = pd.read_excel('./archivos/'+archivo)
 
+        #dataframe = dataframe.fillna(lambda x: x.median())
         ## Filtramos el dataframe para solo tener el pais que se ha indicado    
-        dataframe.loc[dataframe[etiquetaPais] == pais]    
+        #dataframe.loc[dataframe[etiquetaPais] == pais]    
+        dataframe = dataframe[dataframe[etiquetaPais] == pais]
         #dataframe = dataframe[(dataframe.Pais == pais )]
 
 
+        dataframe = dataframe.fillna(lambda x: x.median())
 
         ## La lista de objetos, es decir las columnas que tienen valores no numericos
-        listaObjetos = dataframe.select_dtypes(include = ["object", 'datetime']).columns
+        listaObjetos = dataframe.select_dtypes(include = ["object", 'datetime'], exclude=['number']).columns
         #print(listaObjetos)
 
         le =LabelEncoder()
 
         # Feature = caracteristica feat
-        for feat in listaObjetos:
-            dataframe[feat] = le.fit_transform(dataframe[feat].astype(str))
+        #for feat in listaObjetos:
+        #    dataframe[feat] = le.fit_transform(dataframe[feat].astype(str))
 
+
+        dataframe[infecciones] = dataframe[infecciones].fillna(0)
+        
+        #dataframe[infecciones] = pd.to_numeric(dataframe[infecciones], errors='coerce')        
 
         dataframe_caracteristicas = dataframe.drop([infecciones], axis=1)#.reshape((-1,1))
         #dataframe_caracteristicas = dataframe[feature].values.reshape(-1,1)
         dataframe_objetivo = dataframe[infecciones]
+
 
 
         #print('Informacion dataframe tratado')
@@ -165,8 +176,9 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
             predicciones = predicciones.split(",")            
         #for prediccion in predicciones:
         #    valorpredicciones[str(prediccion)] = modelo.predict([[200]])
-        
-                
+        nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
+        nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
+        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal')
         return {
             "coeficiente": r2,
             "r2" : r2,
@@ -176,7 +188,8 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
             "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
             "code" : 200,
             #"img" : generarGrafica(modelo, dataframe_caracteristicas['Dia'], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], 'Fechas' , 'Infectados','reporte1.png')
-            "img" : generarGrafica(modelo, dataframe_caracteristicas[feature], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], "", 'Fechas' , 'Infectados','reporte1.png')
+            "img" : generarGrafica(modelo, dataframe_caracteristicas[feature], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], "", 'Fechas' , 'Infectados',nombrePNG),
+            "nombrePdf" : nombrePDF
         }
         
     except Exception as e: 
@@ -190,8 +203,14 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
 
 
 
-def generarGrafica(modelo, X,y, y_predict, titulo, etiqueta,  etiquetaX, etiquetaY, nombreImagen):
-    X_grid=np.arange(min(X),max(X)+100,0.1)
+def generarGrafica(modelo, X, y, y_predict, titulo, etiqueta,  etiquetaX, etiquetaY, nombreImagen):
+    import os
+    import io
+    dir = './imagenes/'
+    for f in os.listdir(dir):
+        os.remove(os.path.join(dir, f))
+
+    X_grid=np.arange(min(X),max(X),0.1)
     X_grid=X_grid.reshape((len(X_grid),1))
     plt.scatter(X,y,label=etiqueta, color='red')
     #plt.plot(X,modelo.predict(poly_reg.fit_transform(X)),color='blue')
@@ -200,11 +219,12 @@ def generarGrafica(modelo, X,y, y_predict, titulo, etiqueta,  etiquetaX, etiquet
     plt.xlabel(etiquetaX)
     plt.ylabel(etiquetaY)
     plt.savefig('./imagenes/'+nombreImagen) 
+    plt.close()
 
-    import os
-    import io
+
     from base64 import encodebytes
     scriptDir = os.path.dirname(__file__)    
+    #pil_img = Image.open(os.path.join(scriptDir,'./imagenes/'+nombreImagen) , mode='r') 
     pil_img = Image.open(os.path.join(scriptDir,'./imagenes/'+nombreImagen) , mode='r') 
     byte_arr = io.BytesIO()
     pil_img.save(byte_arr, format='PNG') 

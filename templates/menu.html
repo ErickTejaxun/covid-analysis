@@ -375,7 +375,15 @@
                     +'<label for="labelReporteCoeficiente" class="form-label">Gráfico de evolución</label>\n'
                     +'<img width="400" height="400" class="form-control" id="campoImagen" name="campoImagen" src="data:image/png;base64,'+response.img+'" alt="Gráfica" >\n'                  
                     +'</div>\n';                    
-                    $('#contenedorResultados').append(campoImagen);                          
+                    $('#contenedorResultados').append(campoImagen);   
+                    
+                    var campoPDF = 
+                    '<div class="mb-3">\n' 
+                    +'<label for="labelReporteCoeficiente" class="form-label">Descargar Reporte en PDF '+response.nombrePdf+'</label>\n'
+                    +'<br>'
+                    +'<a class="btn btn-primary" target="_blank" href="/obtenerPDF/'+response.nombrePdf+'" role="button">Link</a>'                    
+                    +'</div>\n';                    
+                    $('#contenedorResultados').append(campoPDF);                     
 
                   console.log(response);
                   toastr.success('Análisis realizado con éxito. Veo resultados en área de reportes.');

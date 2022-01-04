@@ -1,6 +1,6 @@
 import os
 from flask import Flask, flash, url_for, redirect, url_for, render_template, request, jsonify
-from flask import send_file, current_app as app
+from flask import send_file, send_from_directory, current_app as app
 import json
 from json import JSONEncoder
 from werkzeug.utils import secure_filename
@@ -88,12 +88,13 @@ def home():
 def menu():
     return render_template("menu.html", listaArchivos=obtenerListaArchivos())
 
-@app.route("/reports", methods=["POST", "GET"])
-def reports():
-    if request.method == "POST":
-        inpt = request.form["valor"]
-    else:
-        return render_template('reports.html')
+@app.route("/obtenerPDF/<archivo>", methods=["GET"])
+def reports(archivo):
+    if request.method == "GET":
+        workingdir = os.path.abspath(os.getcwd())
+        filepath = workingdir + '/pdfs/'
+        return send_from_directory(filepath, archivo)        
+        
 
 @app.route("/getParametros", methods=["POST", "GET"])
 def getParametros():
@@ -140,19 +141,18 @@ def analisis():
             predicciones = request.form.getlist("valoresPredecidos")
             predicciones = predicciones[0]
             #(archivo, pais, infecciones, etiquetaPais, predicciones)
-            if (tipoRegresion == '1'):
+            if (tipoRegresion == '1' ):
                 resultados = TendenciaInfeccionLineal(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones)
-            if (tipoRegresion == '2'):
+                return jsonify(resultados)
+            if (tipoRegresion == '2' or tipoRegresion == '0'):
                 resultados = TendenciaInfeccionPoli(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones)
-            return jsonify(resultados)
+                return jsonify(resultados)
             #archivo, pais, infecciones, etiquetaPais, predicciones =[]
     return jsonify({"codigo":400})
 
 @app.route("/descargar" , methods=["POST"])
 def descargar():      
     return redirect("/static/ast.gv.pdf")
-
-
 
 if __name__ == "__main__":    
     app.config['TEMPLATES_AUTO_RELOAD'] = True
