@@ -128,6 +128,17 @@ def obtenerParametros(option):
         ]    
         return parametros
 
+    if option == '11': ## Tendencia de la infección por Covid-19 en un país
+        parametros = [
+                {'id': 'titulo', 'nombre': 'Título reporte', 'valorActual': "Porcentaje de hombres infectados por covid-19 en un País desde el primer caso activos en "},
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "location"},
+                {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
+                {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'id': 'etiquetaInfecciones', 'nombre': 'Tendencia de vacunación', 'valorActual': "total_cases"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
+        ]    
+        return parametros        
+
 def obtenerEncabezados(file):    
     try:
         if '.csv' in file: # El archivo es un csv
@@ -319,7 +330,28 @@ def analisis():
             if (tipoRegresion == '2' or tipoRegresion == '0'):
                 grados = int(request.form["grados"])
                 resultados = PrediccionCasosAnioPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados ,titulo)
-                return jsonify(resultados)                           
+                return jsonify(resultados)
+
+        if(codigoAnalisis == '11'): 
+            pais = request.form["nombrePais"]
+            titulo = request.form["titulo"]
+            feature = request.form["feature"]
+            infecciones = request.form["etiquetaInfecciones"]
+            etiquetaPais = request.form["etiquetaPais"]
+            #predicciones = str(request.form.getlist("valoresPredecidos")).split(",")
+            predicciones = request.form.getlist("valoresPredecidos")
+            predicciones = predicciones[0]
+            #(archivo, pais, infecciones, etiquetaPais, predicciones)
+            if (tipoRegresion == '1' ):
+                grados = int(request.form["grados"])
+                resultados = PorcentajeInfectadosPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados, titulo)                
+                #resultados = PorcentajeInfectadosPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, titulo)
+                return jsonify(resultados)
+            if (tipoRegresion == '2' or tipoRegresion == '0'):
+                grados = int(request.form["grados"])
+                resultados = PorcentajeInfectadosPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados, titulo)
+                #resultados = TendenciaInfeccionRegresionPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados ,titulo)
+                return jsonify(resultados)                                           
     return jsonify({"codigo":400})
 
 @app.route("/descargar" , methods=["POST"])
