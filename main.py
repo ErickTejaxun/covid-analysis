@@ -27,9 +27,10 @@ def obtenerParametros(option):
     if option == '1': ## Tendencia de la infección por Covid-19 en un país
         parametros = [
                 {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "Pais"},
+                {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
                 {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
                 {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "Infectados"},
-                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "Dia"}
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "Dia"}                
         ]    
         return parametros
     if option == '2': ## Predicción de Infertados en un País
@@ -145,7 +146,8 @@ def analisis():
                 resultados = TendenciaInfeccionLineal(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones)
                 return jsonify(resultados)
             if (tipoRegresion == '2' or tipoRegresion == '0'):
-                resultados = TendenciaInfeccionPoli(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones)
+                grados = int(request.form["grados"])
+                resultados = TendenciaInfeccionRegresionPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados)
                 return jsonify(resultados)
             #archivo, pais, infecciones, etiquetaPais, predicciones =[]
     return jsonify({"codigo":400})
