@@ -26,19 +26,25 @@ def obtenerListaArchivos():
 def obtenerParametros(option):
     if option == '1': ## Tendencia de la infección por Covid-19 en un país
         parametros = [
-                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "Pais"},
+                {'id': 'titulo', 'nombre': 'Título reporte', 'valorActual': "Tendencia de la infección por Covid-19 en "},
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "location"},
                 {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
                 {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
-                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "Infectados"},
-                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "Dia"}                
+                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "total_cases"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
+
         ]    
         return parametros
     if option == '2': ## Predicción de Infertados en un País
         parametros = [
-                {'nombre': 'Etiqueta País', 'valorActual': "contry"},
-                {'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
-                {'nombre': 'Etiqueta casos', 'valorActual': "cases"}
-        ]    
+                {'id': 'titulo', 'nombre': 'Título reporte', 'valorActual': "Predicción de Infertados en "},
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "location"},
+                {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
+                {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "total_cases"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
+
+        ]  
         return parametros        
 
 
@@ -133,8 +139,9 @@ def analisis():
         archivoAnalisis = request.form["archivoAnalisis"]
         tipoAnalisis = request.form["tipoAnalisis"]    
         tipoRegresion = request.form["tipoRegresion"]    
-        if(codigoAnalisis == '1'):
+        if(codigoAnalisis == '1' or codigoAnalisis=='2'): 
             pais = request.form["nombrePais"]
+            titulo = request.form["titulo"]
             feature = request.form["feature"]
             infecciones = request.form["etiquetaInfecciones"]
             etiquetaPais = request.form["etiquetaPais"]
@@ -143,11 +150,11 @@ def analisis():
             predicciones = predicciones[0]
             #(archivo, pais, infecciones, etiquetaPais, predicciones)
             if (tipoRegresion == '1' ):
-                resultados = TendenciaInfeccionLineal(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones)
+                resultados = TendenciaInfeccionLineal(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, titulo)
                 return jsonify(resultados)
             if (tipoRegresion == '2' or tipoRegresion == '0'):
                 grados = int(request.form["grados"])
-                resultados = TendenciaInfeccionRegresionPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados)
+                resultados = TendenciaInfeccionRegresionPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados ,titulo)
                 return jsonify(resultados)
             #archivo, pais, infecciones, etiquetaPais, predicciones =[]
     return jsonify({"codigo":400})

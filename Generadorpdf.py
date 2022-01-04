@@ -6,12 +6,13 @@ class PDF(FPDF, HTMLMixin):
     pass
 
 
-def generarPDF(nombre, titulo, algoritmo):
+def generarPDF(nombre, titulo, algoritmo, tabla):
+    arr = os.listdir('./imagenes')
     now = datetime.now()
     fechahora = now.strftime("%d/%m/%Y %H:%M:%S")
     pdf = PDF()    
-    texto_abstract = ("El siguiente reporte tiene como objetivo reportar los resultados<br> del "  + titulo+
-                    "Luego de la aplicación del análisis a través de <br>" + algoritmo+
+    texto_abstract = ("El siguiente reporte tiene como objetivo reportar los resultados<br>del análisis de "  + titulo+
+                    "<br>Luego de la aplicación del análisis a través de<br>" + algoritmo+
                     "se han obtenido los resultados siguientes <br>"
                     )
     
@@ -44,14 +45,15 @@ def generarPDF(nombre, titulo, algoritmo):
         <tbody>
             <tr>
             <td width="50%" >{texto_abstract}</td>
-            <td width="50%" ></td>
+            <td width="50%" >{tabla}</td>
             </tr>            
         </tbody>
         </table>
     </section>
     """)
 
-    #pdf.image(img,h=70,w=150,x=30,y=100,type="png")
+    for imagen in arr:
+        pdf.image('./imagenes/'+imagen,h=70,w=150,x=30,y=100,type="png")
 
     dir = './pdfs/'
     for f in os.listdir(dir):
