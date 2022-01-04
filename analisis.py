@@ -105,8 +105,7 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
             "mensaje" : str(e).replace("\"", "-"),
             "code" : 666,
             "timestamp": now.strftime("%d/%m/%Y %H:%M:%S")
-        }        
-
+        }
 
 def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, predicciones):
     now = datetime.now()
@@ -177,8 +176,8 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
         #for prediccion in predicciones:
         #    valorpredicciones[str(prediccion)] = modelo.predict([[200]])
         nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
-        nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
-        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal')
+        nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'        
+        generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal', img)
         return {
             "coeficiente": r2,
             "r2" : r2,

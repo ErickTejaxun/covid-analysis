@@ -10,9 +10,9 @@ def generarPDF(nombre, titulo, algoritmo):
     now = datetime.now()
     fechahora = now.strftime("%d/%m/%Y %H:%M:%S")
     pdf = PDF()    
-    texto_abstract = ("El siguiente reporte tiene como objetivo reportar los resultados del "  + titulo+
-                    "Luego de la aplicación del análisis a través de" + algoritmo+
-                    "se han obtenido los resultados siguientes"
+    texto_abstract = ("El siguiente reporte tiene como objetivo reportar los resultados<br> del "  + titulo+
+                    "Luego de la aplicación del análisis a través de <br>" + algoritmo+
+                    "se han obtenido los resultados siguientes <br>"
                     )
     
     contenidoHTML =("<table>"
@@ -44,12 +44,14 @@ def generarPDF(nombre, titulo, algoritmo):
         <tbody>
             <tr>
             <td width="50%" >{texto_abstract}</td>
-            <td width="50%" >{texto_abstract}</td>
+            <td width="50%" ></td>
             </tr>            
         </tbody>
         </table>
     </section>
     """)
+
+    #pdf.image(img,h=70,w=150,x=30,y=100,type="png")
 
     dir = './pdfs/'
     for f in os.listdir(dir):
