@@ -178,15 +178,7 @@ def TendenciaInfeccionPoli(archivo, pais, infecciones, etiquetaPais, feature, pr
         nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
         nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'        
         generarPDF(nombrePDF,'Tendencia de la infección por Covid-19 en un país RL', 'Regresión Lineal', img)
-        return {
-            "coeficiente": r2,
-            "r2" : r2,
-            "rmse" : rmse,
-            "mse" : mse,
-            "predicciones" : valorpredicciones,
-            "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),
-            "code" : 200,
-            #"img" : generarGrafica(modelo, dataframe_caracteristicas['Dia'], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], 'Fechas' , 'Infectados','reporte1.png')
+        return { "coeficiente": r2,"r2" : r2,"rmse" : rmse,"mse" : mse,"predicciones" : valorpredicciones,"timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),"code" : 200,            
             "img" : generarGrafica(modelo, dataframe_caracteristicas[feature], dataframe_objetivo, prediccion_entrenamiento, titulosReportes[0], "", 'Fechas' , 'Infectados',nombrePNG),
             "nombrePdf" : nombrePDF
         }
