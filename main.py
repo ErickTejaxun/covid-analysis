@@ -71,7 +71,29 @@ def obtenerParametros(option):
                 {'id': 'municipio', 'nombre': 'Municipio', 'valorActual': "GUATEMALA"},
 
         ]               
-        return parametros        
+        return parametros 
+    if option == '5': ## Tendencia de la infección por Covid-19 en un país
+        parametros = [
+                {'id': 'titulo', 'nombre': 'Título reporte', 'valorActual': "Predicción de mortalidad por COVID en"},
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "location"},
+                {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
+                {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta de muertes', 'valorActual': "total_deaths"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
+
+        ]    
+        return parametros 
+    if option == '6': ## Tendencia de la infección por Covid-19 en un país
+        parametros = [
+                {'id': 'titulo', 'nombre': 'Título reporte', 'valorActual': "Análisis del número de muertes por coronavirus en "},
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "location"},
+                {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
+                {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta de muertes', 'valorActual': "total_deaths"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
+
+        ]
+        return parametros                         
 
 
 def obtenerEncabezados(file):    
@@ -175,7 +197,7 @@ def analisis():
         archivoAnalisis = request.form["archivoAnalisis"]
         tipoAnalisis = request.form["tipoAnalisis"]    
         tipoRegresion = request.form["tipoRegresion"]    
-        if(codigoAnalisis == '1' or codigoAnalisis=='2'): 
+        if(codigoAnalisis == '1' or codigoAnalisis=='2' or codigoAnalisis=='5'): 
             pais = request.form["nombrePais"]
             titulo = request.form["titulo"]
             feature = request.form["feature"]
