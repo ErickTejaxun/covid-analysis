@@ -45,6 +45,16 @@ def obtenerParametros(option):
                 {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
 
         ]  
+    if option == '3': ## Predicción de Infertados en un País
+        parametros = [
+                {'id': 'titulo', 'nombre': 'Título reporte', 'valorActual': "Indice de Progresión de la pandemia en "},
+                {'id': 'etiquetaPais','nombre': 'Etiqueta País', 'valorActual': "location"},
+                {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
+                {'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "total_cases"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
+
+        ]         
         return parametros        
 
 
@@ -79,6 +89,16 @@ def obtenerEncabezados(file):
                 "codigo": 100,
                 "mensaje": "OK"
             }
+
+        if '.json' in file: #El archivo es un excel
+            df = pd.read_json(os.path.join(app.config['UPLOAD_FOLDER'])+file)
+            encabezados = df.columns.values.tolist()
+            #return encabezados.to_json(orient="records") 
+            return {
+                "encabezados": encabezados,
+                "codigo": 100,
+                "mensaje": "OK"
+            }            
     except Exception as e: 
         return {
             "mensaje": str(e),
@@ -156,6 +176,23 @@ def analisis():
                 grados = int(request.form["grados"])
                 resultados = TendenciaInfeccionRegresionPolinomial(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados ,titulo)
                 return jsonify(resultados)
+        if(codigoAnalisis == '3'): 
+            pais = request.form["nombrePais"]
+            titulo = request.form["titulo"]
+            feature = request.form["feature"]
+            infecciones = request.form["etiquetaInfecciones"]
+            etiquetaPais = request.form["etiquetaPais"]
+            #predicciones = str(request.form.getlist("valoresPredecidos")).split(",")
+            predicciones = request.form.getlist("valoresPredecidos")
+            predicciones = predicciones[0]
+            #(archivo, pais, infecciones, etiquetaPais, predicciones)
+            if (tipoRegresion == '1' ):
+                resultados = IndiceProgresion(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, titulo)
+                return jsonify(resultados)
+            if (tipoRegresion == '2' or tipoRegresion == '0'):
+                grados = int(request.form["grados"])
+                resultados = IndiceProgresion(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados ,titulo)
+                return jsonify(resultados)                
             #archivo, pais, infecciones, etiquetaPais, predicciones =[]
     return jsonify({"codigo":400})
 
