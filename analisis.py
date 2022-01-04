@@ -89,12 +89,12 @@ def TendenciaInfeccionLineal(archivo, pais, infecciones, etiquetaPais, feature, 
         nombrePDF = now.strftime("%d%m%Y%H%M%S") + '.pdf'
         nombrePNG = now.strftime("%d%m%Y%H%M%S") + '.png'
 
-        tabla= '<table> <tr>'
+        tabla= ''
         index = 0
         for prediccion in predicciones:
-            tabla = tabla + '<th>'+str(prediccion)+'</th>' + '<th>'+str(valorpredicciones[index])+'</th>'
+            tabla = tabla + str(prediccion) +'   '+str(valorpredicciones[index])+'<br>'
             index = index + 1
-        tabla = tabla + '</tr></table>'
+        #tabla = tabla + '</tbody></table>'
 
         generarPDF(nombrePDF,titulo + pais, 'Regresión Lineal', tabla)
         return {"coeficiente": r2, "r2" : r2, "rmse" : rmse, "mse" : mse, "predicciones" : valorpredicciones, "timestamp": now.strftime("%d/%m/%Y %H:%M:%S"),

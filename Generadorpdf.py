@@ -39,14 +39,14 @@ def generarPDF(nombre, titulo, algoritmo, tabla):
         <thead>
             <tr>
             <th width="50%" ><b>1. Abstract</b></th>
-            <th width="50%" ><b>2. Resultados</b></th>
+            <th width="50%" ><b>2. Resultados Predicciones</b></th>
             </tr>
         </thead>
         <tbody>
             <tr>
             <td width="50%" >{texto_abstract}</td>
             <td width="50%" >{tabla}</td>
-            </tr>            
+            </tr>                      
         </tbody>
         </table>
     </section>
