@@ -45,6 +45,7 @@ def obtenerParametros(option):
                 {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
 
         ]  
+        return parametros
     if option == '3': ## Predicción de Infertados en un País
         parametros = [
                 {'id': 'titulo', 'nombre': 'Título reporte', 'valorActual': "Indice de Progresión de la pandemia en "},
@@ -54,7 +55,22 @@ def obtenerParametros(option):
                 {'id': 'etiquetaInfecciones', 'nombre': 'Etiqueta infección por día', 'valorActual': "total_cases"},
                 {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "date"}  
 
-        ]         
+        ]      
+        return parametros
+
+    if option == '4': ## Predicción de mortalidad por COVID en un Departamento.
+        parametros = [
+                {'id': 'titulo', 'nombre': "Título reporte",'valorActual': 'Predicción de mortalidad por COVID en un Departamento. '},
+                {'id': 'etiquetaDepartamento','nombre': 'Etiqueta Departamento', 'valorActual': "departamento"},
+                {'id': 'departamento','nombre': 'Departamento', 'valorActual': "GUATEMALA"},
+                {'id': 'grados', 'nombre': 'Grados', 'valorActual': "6"},
+                #{'id': 'nombrePais', 'nombre': 'Nombre del País', 'valorActual': "Guatemala"},
+                {'id': 'etiquetaMortalidad', 'nombre': 'Etiqueta mortalidad', 'valorActual': "casos"},
+                {'id': 'feature', 'nombre': 'Feature (X)', 'valorActual': "fecha"},
+                {'id': 'etiquetaMunicipio', 'nombre': 'Etiqueta Municipio', 'valorActual': "municipio"},
+                {'id': 'municipio', 'nombre': 'Municipio', 'valorActual': "GUATEMALA"},
+
+        ]               
         return parametros        
 
 
@@ -192,7 +208,27 @@ def analisis():
             if (tipoRegresion == '2' or tipoRegresion == '0'):
                 grados = int(request.form["grados"])
                 resultados = IndiceProgresion(archivoAnalisis, pais, infecciones, etiquetaPais, feature, predicciones, grados ,titulo)
-                return jsonify(resultados)                
+                return jsonify(resultados)  
+
+        if(codigoAnalisis == '4'):             
+            titulo = request.form["titulo"]
+            feature = request.form["feature"]
+            infecciones = request.form["etiquetaMortalidad"]
+            etiquetaDepartamento = request.form["etiquetaDepartamento"]
+            departamento = request.form["departamento"]
+            #predicciones = str(request.form.getlist("valoresPredecidos")).split(",")
+            predicciones = request.form.getlist("valoresPredecidos")
+            predicciones = predicciones[0]
+            etiquetaMunicipio = request.form["etiquetaMunicipio"]
+            municipio = request.form["municipio"]
+            #(archivo, pais, infecciones, etiquetaPais, predicciones)
+            if (tipoRegresion == '1' ):
+                resultados = prediccionMortandadDepartamento(archivoAnalisis, departamento,etiquetaMunicipio, municipio, infecciones, etiquetaDepartamento, feature, predicciones, titulo)
+                return jsonify(resultados)
+            if (tipoRegresion == '2' or tipoRegresion == '0'):
+                grados = int(request.form["grados"])
+                resultados = prediccionMortandadDepartamentoPoli(archivoAnalisis, departamento,etiquetaMunicipio, municipio, infecciones, etiquetaDepartamento, feature, predicciones, grados, titulo )
+                return jsonify(resultados)                               
             #archivo, pais, infecciones, etiquetaPais, predicciones =[]
     return jsonify({"codigo":400})
 
